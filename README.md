@@ -8,6 +8,6 @@
 自用修改
 > https://raw.githubusercontent.com/DaqiGit/MyCode/main/covid.js
 ### 2.B站解锁1080+&4K模块
-> https://raw.githubusercontent.com/DaqiGit/MyCode/main/BiliBili1080P%2B4K.sgmodule
+> https://raw.githubusercontent.com/DaqiGit/MyCode/main/BiliBili1080P4K.sgmodule
 ### 3.野比大佬的防火墙 
 > https://raw.githubusercontent.com/DaqiGit/MyCode/main/FirewallNobyDa.sgmodule
