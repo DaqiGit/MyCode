@@ -10,4 +10,4 @@
 ### 2.B站解锁1080+&4K模块
 > https://raw.githubusercontent.com/DaqiGit/MyCode/main/BiliBili1080P%2B4K.sgmodule
 ### 3.野比大佬的防火墙 
-> https://raw.githubusercontent.com/DaqiGit/MyCode/main/NobyDa%E9%98%B2%E7%81%AB%E5%A2%99.sgmodule
+> https://raw.githubusercontent.com/DaqiGit/MyCode/main/FirewallNobyDa.sgmodule
