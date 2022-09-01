@@ -31,7 +31,7 @@ const headers = {
         .delay(1000);
     $.log(newslist);
     let desc = newslist.desc;
-    let news = newslist.news[:];
+    let news = newslist.news[0,1,2,3,4];
     //let risk = newslist.riskarea.length;
     let title = "🗞【疫情信息概览】";
     let subtitle = `  📅  ${formatTime()}`;
