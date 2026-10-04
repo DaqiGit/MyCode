@@ -1,10 +1,110 @@
-#!name=网络防火墙
-#!desc=启用后，如果设备从"蜂窝网络"切换至"WiFi"，则断网15秒，Apple/Surge除外。
-#!system=ios
-
-[Script]
-防火墙(规则) = type=rule,script-path=https://gist.githubusercontent.com/NobyDa/af8bab8cab062d77ae61646c670bc992/raw/Timed-Firewall.js
-防火墙(事件) = type=event,event-name=network-changed,script-path=https://gist.githubusercontent.com/NobyDa/e1f82ee2aa21c3958d8a7ce69ac27827/raw/WiFi-Firewall.js
-
-[Rule]
-AND,((NOT,((OR,((USER-AGENT,Surge*), (RULE-SET,https://raw.githubusercontent.com/NobyDa/Script/master/Surge/Apple.list))))), (SCRIPT,防火墙(规则))),REJECT-TINYGIF
+name: 番茄小说去广告
+description: 移除番茄小说开屏广告、移除文章底部和章末广告、移除听书页面广告、移除悬浮部件和底栏多余的福利标签。
+open_url: https://apps.apple.com/app/id1468454200
+author: 可莉🅥[https://github.com/luestr/ProxyResource/blob/main/README.md]
+homepage: https://hub.kelee.one
+icon: https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/DragonRead.png
+dns: {}
+rules:
+- domain:
+    match: zlink.ugsdk.cn
+    policy: REJECT-DROP
+- domain:
+    match: mon.toutiaocloud.net
+    policy: REJECT-DROP
+- domain:
+    match: lf-normal-gr-sourcecdn.bytegecko.com
+    policy: REJECT-DROP
+- domain:
+    match: lf-webcast-gr-sourcecdn.bytegecko.com
+    policy: REJECT-DROP
+- domain:
+    match: p3-developer.bytemaimg.com
+    policy: REJECT-DROP
+- domain:
+    match: webcast-open.douyin.com
+    policy: REJECT-DROP
+- domain:
+    match: p11-webcast-sign.douyinpic.com
+    policy: REJECT-DROP
+- domain:
+    match: p3-webcast-sign.douyinpic.com
+    policy: REJECT-DROP
+- domain:
+    match: log3-applog.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: log5-applog.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: mon11-misc-lq.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: mon11-misc.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: mon3-misc.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: rtlog3-applog.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: rtlog5-applog.fqnovel.com
+    policy: REJECT-DROP
+- domain:
+    match: effect.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: i.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: is-lq.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: is.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: security.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: vas.snssdk.com
+    policy: REJECT-DROP
+- domain:
+    match: mon.toutiaocloud.com
+    policy: REJECT-DROP
+- domain:
+    match: abtest3-misc.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: ads3-normal.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: ads5-normal.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: feedback-c.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: gecko3.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: gecko5.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: ma.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: minigame3-normal.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: minigame5-normal.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: mssdk.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: timon.zijieapi.com
+    policy: REJECT-DROP
+- domain:
+    match: vcs.zijieapi.com
+    policy: REJECT-DROP
