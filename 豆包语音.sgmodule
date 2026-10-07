@@ -1,0 +1,9 @@
+#!name=豆包语音‑ASR 放行模块
+#!desc=修复豆包、豆包输入法语音输入被拦截问题
+#!author=Doubao
+#!homepage=https://www.doubao.com
+
+[Rule]
+DOMAIN,openspeech.bytedance.com,DIRECT
+DOMAIN,speech.bytedance.com,DIRECT
+DOMAIN-SUFFIX,volces.com,DIRECT
