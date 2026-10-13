@@ -1,0 +1,27 @@
+#!name=车来了去广告
+#!desc=去除车来了开屏广告、首页和详情页广告，精简底部标签栏
+#!author=@ddgksf2013
+#!homepage=https://t.me/ddgksf2021
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bus.png
+#!category=zky-modified
+
+[URL Rewrite]
+# 开屏广告
+^https?:\/\/api\.chelaile\.net\.cn\/(goocity\/)?advert\/ - reject
+^https?:\/\/atrace\.chelaile\.net\.cn\/advert\/ - reject
+^https?:\/\/atrace\.chelaile\.net\.cn\/exhibit\?&adv_image - reject
+^https?:\/\/pic1\.chelaile\.net\.cn\/adv\/ - reject
+
+# 首页广告
+^https?:\/\/api\.chelaile\.net\.cn\/tapi\/cardv2\/ - reject
+^https?:\/\/web\.chelaile\.net\.cn\/api\/advert\/ - reject
+
+# 详情页广告
+^https?:\/\/api\.chelaile\.net\.cn\/tapi\/common\/ - reject
+
+[Script]
+# 底部标签栏只保留 首页 / 我的 / 路线规划
+车来了标签栏 = type=http-response, pattern=^https?:\/\/api\.chelaile\.net\.cn\/goocity\/city, requires-body=true, script-path=https://raw.githubusercontent.com/DaqiGit/MyCode/main/chelaile.js, timeout=5
+
+[MITM]
+hostname = %APPEND% api.chelaile.net.cn, atrace.chelaile.net.cn, web.chelaile.net.cn, pic1.chelaile.net.cn
