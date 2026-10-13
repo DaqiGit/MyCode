@@ -1,0 +1,13 @@
+#!name=京东比价
+#!desc=首次使用需安装慢慢买 App，进入[我的]页面捕获令牌，之后在京东商品详情页查看比价。比价结果按商品缓存 60 分钟。
+#!author=wf021325, githubdulong, mw418
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/JD.png
+#!openUrl=https://apps.apple.com/app/id414245413
+
+[Script]
+慢慢买令牌 = type=http-request, pattern=^https?:\/\/apapia-sqk-weblogic\.manmanbuy\.com\/baoliao\/center\/menu$, script-path=https://raw.githubusercontent.com/DaqiGit/MyCode/main/JD_Price.js, requires-body=true, timeout=5
+
+京东比价 = type=http-response, pattern=^https?:\/\/in\.m\.jd\.com\/product\/graphext\/\d+\.html, script-path=https://raw.githubusercontent.com/DaqiGit/MyCode/main/JD_Price.js, requires-body=true, timeout=15
+
+[MITM]
+hostname = %APPEND% in.m.jd.com, apapia-sqk-weblogic.manmanbuy.com
