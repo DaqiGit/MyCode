@@ -5,6 +5,11 @@
 #!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Bus.png
 #!category=zky-modified
 
+[Rule]
+# 第三方广告平台：yg84（ssp 竞价 / adx 拉取广告 / ctrace 曝光追踪）、InnoAds
+DOMAIN-SUFFIX,yg84.com,REJECT,extended-matching,pre-matching
+DOMAIN-SUFFIX,innoads.cn,REJECT,extended-matching,pre-matching
+
 [URL Rewrite]
 # 开屏广告
 ^https?:\/\/api\.chelaile\.net\.cn\/(goocity\/)?advert\/ - reject
