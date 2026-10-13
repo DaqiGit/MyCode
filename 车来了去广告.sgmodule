@@ -16,6 +16,8 @@ DOMAIN-SUFFIX,innoads.cn,REJECT,extended-matching,pre-matching
 ^https?:\/\/atrace\.chelaile\.net\.cn\/advert\/ - reject
 ^https?:\/\/atrace\.chelaile\.net\.cn\/exhibit\?&adv_image - reject
 ^https?:\/\/pic1\.chelaile\.net\.cn\/adv\/ - reject
+# 直连 IP 的广告配置（明文 HTTP，无需 MITM）
+^http:\/\/\d+\.\d+\.\d+\.\d+\/adpub\/ - reject
 
 # 首页广告
 ^https?:\/\/api\.chelaile\.net\.cn\/tapi\/cardv2\/ - reject
