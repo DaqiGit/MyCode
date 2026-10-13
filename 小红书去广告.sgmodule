@@ -1,0 +1,40 @@
+#!name=小红书去广告
+#!desc=过滤信息流推广，移除图片及视频水印，如有异常，请先清除缓存再尝试。
+#!author=RuCu6[https://github.com/RuCu6], fmz200[https://github.com/fmz200]
+#!homepage=https://hub.kelee.one
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/RedPaper.png
+#!openUrl=https://apps.apple.com/app/id741292507
+#!category=zky-modified
+
+# 原模块的 QUIC 拦截规则已去掉：Surge 的 auto-quic-block（默认开启）会自动拦截命中 MITM 主机名的 QUIC
+
+[Body Rewrite]
+# 搜索页横幅、热榜
+http-response-jq ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/banner_list$ 'if .data then .data = {} else . end'
+http-response-jq ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v1\/search\/hot_list$ 'if .data.items then .data.items = [] else . end'
+# 搜索框推荐词、猜你想搜
+http-response-jq ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/hint 'if .data.hint_words then .data.hint_words = [] else . end'
+http-response-jq ^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/v4\/search\/trending\? 'if .data.queries then .data.queries = [] else . end | if .data.hint_word then .data.hint_word = {} else . end'
+
+[Map Local]
+# 图片水印
+^https:\/\/ci\.xiaohongshu\.com\/system_config\/watermark data-type=tiny-gif status-code=200
+# 惊喜盒子、新手引导、用户横幅
+^https:\/\/edith\.xiaohongshu\.com\/api\/sns\/(?:v1\/surprisebox\/(?:get_style|open|submit_action)|v2\/guide\/user_banner|v3\/note\/guide) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 营销弹窗、广告资源、hey 画廊
+^https:\/\/www\.xiaohongshu\.com\/api\/(?:marketing\/box\/trigger\?|sns\/(?:v1\/ads\/resource|v2\/hey\/\w+\/hey_gallery)) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[Script]
+# 同一个脚本按 URL 分支处理，合并成一条（同一请求本来也只会执行第一条匹配的 http-response 脚本）
+# v1  图片 / 实况照片水印、开屏配置、评论区实况下载
+# v2  图片信息流水印、开屏广告、详情页小部件、关注页推荐
+# v3  视频信息流水印
+# v4  关注流推荐、视频水印
+# v5  评论区实况水印、你可能感兴趣的人
+# v6  首页信息流广告
+# v10 搜索结果广告、视频保存
+# 原模块的 v1/system/service/ui/config 已去掉：脚本只清空 sidebar_config_cny_2025（2025 春节侧边栏），早已失效
+小红书去广告 = type=http-response, pattern=^https:\/\/(?:edith|rec|so|www)\.xiaohongshu\.com\/api\/sns\/(?:v1\/(?:note\/(?:imagefeed|live_photo\/save)|system_service\/config\?|interaction\/comment\/video\/download)|v2\/(?:note\/(?:feed|widgets)|system_service\/splash_config|user\/followings\/followfeed)|v3\/note\/videofeed|v4\/(?:followfeed\?|note\/videofeed)|v5\/(?:note\/comment\/list|recommend\/user\/follow_recommend\?)|v6\/homefeed\?|v10\/(?:search\/notes\?|note\/video\/save)), requires-body=true, script-path=https://kelee.one/Resource/JavaScript/RedPaper/RedPaper_remove_ads.js
+
+[MITM]
+hostname = %APPEND% ci.xiaohongshu.com, edith.xiaohongshu.com, rec.xiaohongshu.com, so.xiaohongshu.com, www.xiaohongshu.com
