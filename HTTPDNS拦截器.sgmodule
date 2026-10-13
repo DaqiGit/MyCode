@@ -78,6 +78,7 @@ IP-CIDR,116.128.177.249/32,REJECT,no-resolve,pre-matching
 IP-CIDR,116.130.224.150/32,REJECT,no-resolve,pre-matching
 IP-CIDR,116.130.224.205/32,REJECT,no-resolve,pre-matching
 IP-CIDR,117.185.247.73/32,REJECT,no-resolve,pre-matching
+IP-CIDR,119.29.29.90/32,REJECT-DROP,no-resolve,pre-matching
 IP-CIDR,119.29.29.98/31,REJECT,no-resolve,pre-matching
 IP-CIDR,123.151.48.171/32,REJECT,no-resolve,pre-matching
 IP-CIDR,123.151.48.193/32,REJECT,no-resolve,pre-matching
