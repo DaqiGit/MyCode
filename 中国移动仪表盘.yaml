@@ -1,0 +1,67 @@
+name: "中国移动（Hark 仪表盘版）"
+description: "桌面/锁屏小组件：剩余话费 + 流量/其他流量/语音半圆仪表 + 近 7 天流量柱状图、今日已用、日均可用、用完预测。先在「中国移动」App 用短信验证码登录一次自动捕获参数"
+author: "Hark（基于 zhaohantao1360-hash v20 改版，iOS 液态玻璃风格 + 用量洞察）；MyCode 修订捕获与续期逻辑"
+icon: "simcard.fill"
+
+# 模块设置页自动生成输入框/开关；模块级 env 优先级最高，会下发到下面所有脚本和小组件
+env_schema:
+  CM_PHONENUMBER:
+    name: "手机号"
+    description: "必填：11 位中国移动手机号"
+  CM_SHOW_USED_FLOW:
+    name: "显示已用流量"
+    description: "关闭时显示剩余流量"
+    options: ["true", "false"]
+    default_value: "false"
+  CM_TITLE:
+    name: "小组件标题"
+    default_value: "中国移动"
+  CM_DEBUG:
+    name: "调试信息"
+    description: "在小组件上显示错误详情"
+    options: ["true", "false"]
+    default_value: "false"
+
+# 需要解密中国移动 App 的 HTTPS 流量：Egern 设置里安装并信任 CA，
+# 再到 iOS「设置→通用→关于本机→证书信任设置」里打开信任
+mitm:
+  hostnames:
+    includes:
+      - client.app.coc.10086.cn
+      - 10086.online-cmcc.cn
+
+scriptings:
+  # 小组件脚本（generic）
+  - generic:
+      name: "china-mobile-hark-dash"
+      script_url: "https://raw.githubusercontent.com/DaqiGit/MyCode/main/china-mobile-hark-dash.js"
+      timeout: 30
+
+  # 会话保活：每 20 分钟后台查询一次，避免长时间不操作被移动注销登录
+  - schedule:
+      name: "中国移动保活-Hark仪表盘"
+      cron: "*/20 * * * *"
+      script_url: "https://raw.githubusercontent.com/DaqiGit/MyCode/main/china-mobile-hark-dash.js"
+      timeout: 30
+      env:
+        CM_KEEPALIVE: "true"
+
+  # 登录参数捕获：在「中国移动」App 用短信验证码登录一次（建议关闭指纹/面容登录），看到通知即成功
+  # 老主机只放行 autoLogin/refreshSession（与脚本 isAutoLogin 一致）；新主机登录路径未确认，暂按整站匹配
+  - http_request:
+      name: "中国移动登录捕获-Hark仪表盘"
+      match: '^https?:\/\/(client\.app\.coc\.10086\.cn(:\d+)?\/biz-orange\/[A-Z]{2}\/.*(autoLogin|refreshSession)|10086\.online-cmcc\.cn(:\d+)?\/)'
+      script_url: "https://raw.githubusercontent.com/DaqiGit/MyCode/main/china-mobile-hark-dash.js"
+      body_required: true
+      max_size: 65536
+      timeout: 10
+
+  # Cookie 刷新：从登录响应抓 Set-Cookie，保持会话有效（只读响应头，不需要 body）
+  - http_response:
+      name: "中国移动Cookie捕获-Hark仪表盘"
+      match: '^https?:\/\/(client\.app\.coc\.10086\.cn(:\d+)?\/biz-orange\/[A-Z]{2}\/.*(autoLogin|refreshSession)|10086\.online-cmcc\.cn(:\d+)?\/)'
+      script_url: "https://raw.githubusercontent.com/DaqiGit/MyCode/main/china-mobile-hark-dash.js"
+      timeout: 10
+
+widgets:
+  - name: "china-mobile-hark-dash"
