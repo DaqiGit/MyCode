@@ -1,0 +1,36 @@
+#!name=酷安去广告
+#!desc=移除酷安开屏广告、首页信息流推广、发现页推广卡片、动态详情页商品推广和评论区广告，以及搜索热词。
+#!author=RuCu6[https://github.com/RuCu6], 可莉🅥[https://github.com/luestr/ProxyResource/blob/main/README.md]
+#!homepage=https://hub.kelee.one
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/CoolApk.png
+#!openUrl=https://apps.apple.com/app/id1422581869
+#!category=zky-modified
+
+# 原版 jq 是从 RuCu6 的 JS 脚本直译的，有两处写错：
+#   indexV8 的 `[...] | index(.entityId)` 会对数组取 .entityId，jq 直接报错，整条改写失效，首页广告一条都没去掉
+#   init 的 `[...] | index(.)` 恒为 0（jq 里 0 是真值），select 把全部启动配置都删光了，而不只是开屏、热搜和首页 Tab
+# 这里改用 IN() 判断；entityId 统一转成字符串再比，接口返回数字或字符串都能命中
+# 每条改写都先判断 .data 类型，接口报错（动态已删除、未登录等）时原样放行，不再往错误响应里塞一个假的 data
+# 部分客户端版本的接口走 api2.coolapk.com，一并匹配
+
+[Body Rewrite]
+# 动态详情：热门 / 置顶评论里的广告（没有 id 的条目）、商品推广卡片
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/feed\/detail\? 'if (.data | type) == "object" then .data |= with_entries(if IN(.key; "hotReplyRows", "topReplyRows") and (.value | type) == "array" then .value |= map(select(.id?)) elif IN(.key; "detailSponsorCard", "include_goods", "include_goods_ids") then .value = [] else . end) else . end'
+# 评论列表里的广告
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/feed\/replyList 'if (.data | type) == "array" then .data |= map(select(.id?)) else . end'
+# 首页信息流：推广卡片、8639 / 29349 / 33006 / 32557 推荐位、标题含「值得买」「红包」的卡片
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/main\/indexV8 'if (.data | type) == "array" then .data |= map(select(.entityTemplate? != "sponsorCard" and (.entityId? | tostring | IN("8639", "29349", "33006", "32557") | not) and (.title? // "" | tostring | test("值得买|红包") | not))) else . end'
+# 启动配置：944 热门搜索、945 开屏广告、6390 首页 Tab，24455 / 36839 是墨鱼（ddgksf2013）脚本额外去掉的配置位；发现页顶部去掉「酷品」
+# 原版因为上面的 bug 把整个 init 都清空了，修好后这两个配置位会重新下发，所以一并补上
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/main\/init 'if (.data | type) == "array" then .data |= map(select(.entityId? | tostring | IN("944", "945", "6390", "24455", "36839") | not) | if (.entityId | tostring) == "20131" and (.entities | type) == "array" then .entities |= map(select(.title? != "酷品")) else . end) else . end'
+# 频道列表：推广卡片、精选配件
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/main\/dataList 'if (.data | type) == "array" then .data |= map(select(.entityTemplate? != "sponsorCard" and .title? != "精选配件")) else . end'
+# 发现页等页面：推广卡片、大图横幅、酷安热搜
+http-response-jq ^https:\/\/api2?\.coolapk\.com\/v6\/page\/dataList 'if (.data | type) == "array" then .data |= map(select((.entityTemplate? | IN("sponsorCard", "imageScaleCard") | not) and .title? != "酷安热搜")) else . end'
+
+[Map Local]
+# 搜索热词
+^https:\/\/api2?\.coolapk\.com\/v6\/search\?.*type=hotSearch data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% api.coolapk.com, api2.coolapk.com
