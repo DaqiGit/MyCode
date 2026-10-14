@@ -713,7 +713,8 @@ function parseMobile(feeData, planData, opts) {
     if (!flows.length && arr.length) flows = arr.slice(0, 1); // 实在没有 flowtype 就取第一条
   }
   // 国内其他流量：flowtype != 0 的各项求和（统一按 MB 累加再格式化）
-  let otherFlow = { title: '其他流量', number: '--', unit: '', percent: 0, color: '#5AC8FA' };
+  // percent 为 null 表示总量未知（不画进度、不显示百分比）
+  let otherFlow = { title: '其他流量', number: '--', unit: '', percent: null, color: '#5AC8FA' };
   const otherItems = flowArrAll.filter((f) => f && f.flowtype != 0);
   if (otherItems.length) {
     let totalMb = 0, sumMb = 0;
@@ -728,9 +729,9 @@ function parseMobile(feeData, planData, opts) {
     const u = totalMb >= 1024
       ? { number: (totalMb / 1024).toFixed(2), unit: 'GB' }
       : { number: totalMb.toFixed(2), unit: 'MB' };
-    otherFlow = { title: '其他流量', number: u.number, unit: u.unit, percent: sumMb > 0 ? Math.max(0, Math.min(1, totalMb / sumMb)) : 0, color: '#5AC8FA' };
+    otherFlow = { title: '其他流量', number: u.number, unit: u.unit, percent: sumMb > 0 ? Math.max(0, Math.min(1, totalMb / sumMb)) : null, color: '#5AC8FA' };
   }
-  let flow = { title: '剩余流量', number: '--', unit: '', percent: 0, color: '#0A84FF' };
+  let flow = { title: '剩余流量', number: '--', unit: '', percent: null, color: '#0A84FF' };
   if (flows.length) {
     const remain = parseFloat(flows[0].flowRemainNum || '0');
     const u = toFlowUnit(remain, String(flows[0].unit || '03'));
@@ -739,7 +740,7 @@ function parseMobile(feeData, planData, opts) {
       title: showUsed ? '已用流量' : '剩余流量',
       number: u.number,
       unit: u.unit,
-      percent: 0,
+      percent: null,
       color: '#0A84FF',
     };
     const sum = parseFloat(flows[0].flowSumNum || '0');
@@ -763,7 +764,7 @@ function parseMobile(feeData, planData, opts) {
     voices = arr.filter((v) => v && v.voicetype == 0);
     if (!voices.length && arr.length) voices = arr.slice(0, 1);
   }
-  let voice = { title: '剩余语音', number: '--', unit: '分钟', percent: 0, color: '#30D158' };
+  let voice = { title: '剩余语音', number: '--', unit: '分钟', percent: null, color: '#30D158' };
   if (voices.length) {
     const remain = parseInt(voices[0].voiceRemainNum || '0', 10);
     voice.number = String(Number.isFinite(remain) ? remain : 0);
@@ -866,18 +867,18 @@ function insights(ctx, ds) {
   const dayKey = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
   const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysLeft = dim - now.getDate() + 1;
-  // 按 通用 + 其他流量 合计剩余统计
+  // 今日用量、日均可用、用完预测都按通用流量统计（其他流量多为定向/专属，不是什么都能用）；
+  // 没有通用流量时才用其他流量。口径和旧版（通用 + 其他合计）不同，所以换了新的存储键
   const _g = toMB(ds.flow), _o = toMB(ds.otherFlow);
-  const flowMB = ctx.env.CM_SHOW_USED_FLOW === 'true' ? null
-    : (_g == null && _o == null ? null : (_g || 0) + (_o || 0));
+  const flowMB = ctx.env.CM_SHOW_USED_FLOW === 'true' ? null : (_g != null ? _g : _o);
   let todayMB = null;
   if (flowMB != null) {
     let snap = null;
-    try { snap = ctx.storage.getJSON('cm_day_snap'); } catch (e) {}
+    try { snap = ctx.storage.getJSON('cm_day_snap_g'); } catch (e) {}
     // 新的一天，或流量变多（加油包/月初重置）→ 重新记起点
     if (!snap || snap.date !== dayKey || flowMB > snap.start + 1) {
       snap = { date: dayKey, start: flowMB };
-      try { ctx.storage.setJSON('cm_day_snap', snap); } catch (e) {}
+      try { ctx.storage.setJSON('cm_day_snap_g', snap); } catch (e) {}
     }
     todayMB = Math.max(0, snap.start - flowMB);
   }
@@ -885,7 +886,7 @@ function insights(ctx, ds) {
   const hist = [];
   if (todayMB != null) {
     let h = {};
-    try { h = ctx.storage.getJSON('cm_hist') || {}; } catch (e) {}
+    try { h = ctx.storage.getJSON('cm_hist_g') || {}; } catch (e) {}
     h[dayKey] = todayMB;
     const keep = {};
     for (let i = 7; i >= 0; i--) {
@@ -894,19 +895,20 @@ function insights(ctx, ds) {
       if (h[k] != null) keep[k] = h[k];
       if (i <= 6) hist.push(h[k] == null ? null : h[k]);
     }
-    try { ctx.storage.setJSON('cm_hist', keep); } catch (e) {}
+    try { ctx.storage.setJSON('cm_hist_g', keep); } catch (e) {}
   }
-  // 按近 6 天（不含今天）平均用量预测
-  let forecast = { text: '用量统计中…', color: SUB };
+  // 按近 6 天（不含今天）平均用量预测到月底：套餐月底重置，只关心够不够撑到月底
+  let forecast = { text: '用量统计中', color: SUB, icon: 'hourglass' };
   if (flowMB != null) {
     const past = hist.slice(0, 6).filter(v => v != null && v > 0);
     const vals = past.length ? past : (todayMB > 0 ? [todayMB] : []);
     if (vals.length) {
       const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const left = flowMB - avg * daysLeft;
       const days = Math.floor(flowMB / avg);
-      forecast = days >= daysLeft
-        ? { text: days > 999 ? '按近期速度 充足' : `预计够用 ${days} 天 ✓`, color: C_VOICE }
-        : { text: `约 ${days} 天用完 · 早于月底`, color: C_FEE };
+      forecast = left >= 0
+        ? { text: `月底约剩 ${fmtMB(left)}`, color: C_VOICE, icon: 'checkmark.circle.fill' }
+        : { text: days < 1 ? '今天可能用完' : `约 ${days} 天后用完`, color: C_FEE, icon: 'exclamationmark.triangle.fill' };
     }
   }
   return {
@@ -961,8 +963,8 @@ function barSvg(pct, color, w, h) {
 }
 
 // 半圆仪表
-function gaugeSvg(pct, color, w) {
-  const stroke = 12, r = (w - stroke) / 2, cx = w / 2, cy = w / 2, h = w / 2 + stroke / 2;
+function gaugeSvg(pct, color, w, stroke = 12) {
+  const r = (w - stroke) / 2, cx = w / 2, cy = w / 2, h = w / 2 + stroke / 2;
   const p = Math.max(0, Math.min(1, Number(pct) || 0));
   const pt = a => [(cx - r * Math.cos(a)).toFixed(2), (cy - r * Math.sin(a)).toFixed(2)];
   const [x0, y0] = pt(0), [x1, y1] = pt(Math.PI), [xp, yp] = pt(Math.PI * p);
@@ -985,35 +987,44 @@ function sparkSvg(values, color, w, h) {
   return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}'>${body}</svg>`);
 }
 
-// 仪表卡：图标+名称 / 半圆仪表+百分比 / 数值
+// 有数据才显示（没有语音包、没有其他流量时整卡隐藏）
+function hasData(d) { return !!d && d.number != null && d.number !== '--'; }
+
+// 剩余越少越警示：低于 20% 橙、低于 10% 红；总量未知保持原色
+function levelColor(d, color) {
+  const p = d && d.percent;
+  if (typeof p !== 'number') return color;
+  return p < 0.1 ? WARN : p < 0.2 ? C_FEE : color;
+}
+
+// 仪表卡：图标+名称 / 半圆仪表（百分比在弧内）/ 数值
 function gaugeCard(icon, color, d, fallbackTitle, opt) {
   const o = opt || {};
-  const data = d || { title: fallbackTitle, number: '--', unit: '', percent: 0 };
-  const pct = data.percent > 0 ? Math.round(data.percent * 100) : 0;
-  const gw = o.gw || 46;
+  const data = d || { title: fallbackTitle, number: '--', unit: '', percent: null };
+  const c = levelColor(data, color);
+  const hasPct = typeof data.percent === 'number';
+  const gw = o.gw || 52, stroke = 9;
   return glass([
     {
       type: 'stack', direction: 'row', alignItems: 'center', gap: 3,
       children: [
         { type: 'image', src: `sf-symbol:${icon}`, width: 10, height: 10, color },
-        t(o.title || data.title || fallbackTitle, 9, 'medium', SUB, { minScale: 1 }),
+        t(o.title || data.title || fallbackTitle, 10, 'medium', SUB, { minScale: 0.8 }),
       ],
     },
     {
-      type: 'stack', direction: 'column', alignItems: 'center', gap: -3,
-      children: [
-        { type: 'image', src: gaugeSvg(data.percent, color, 64), width: gw, height: Math.round(gw * 38 / 64) },
-        t(`${pct}%`, 9, 'bold', color, { minScale: 1 }),
-      ],
+      type: 'stack', direction: 'column', alignItems: 'center', width: gw, height: Math.round(gw * (32 + stroke / 2) / 64),
+      backgroundImage: gaugeSvg(data.percent, c, 64, stroke),
+      children: [{ type: 'spacer' }, t(hasPct ? `${Math.round(data.percent * 100)}%` : '', 10, 'bold', c, { minScale: 1 })],
     },
     {
       type: 'stack', direction: 'row', alignItems: 'end', gap: 2,
       children: [
-        t(data.number, o.numSize || 15, 'bold', TXT, { minScale: 0.7 }),
+        t(data.number, o.numSize || 16, 'bold', TXT, { minScale: 0.6 }),
         t(data.unit || '', 9, 'semibold', SUB, { minScale: 1 }),
       ],
     },
-  ], { flex: 1, alignItems: 'center', gap: 2, padding: [7, 4], borderRadius: 16, ...(o.height ? { height: o.height } : {}) });
+  ], { flex: 1, alignItems: 'center', gap: 3, padding: [7, 4], borderRadius: 16, ...(o.height ? { height: o.height } : {}) });
 }
 
 function ringValues(ds) {
@@ -1032,13 +1043,16 @@ function t(text, size, weight, color, extra) {
 }
 
 function header(title, ds, fromCache) {
+  // 今天更新只显示时间；用的是缓存时整段标橙，一眼能看出数据不是最新
+  const ts = ds && ds.updatedAt;
+  const when = !ts ? '--' : new Date(ts).toDateString() === new Date().toDateString() ? fmtTime(ts).slice(6) : fmtTime(ts);
   return {
     type: 'stack', direction: 'row', alignItems: 'center', gap: 4,
     children: [
       { type: 'image', src: 'sf-symbol:antenna.radiowaves.left.and.right', width: 12, height: 12, color: C_FLOW },
-      t(title, 'footnote', 'semibold'),
+      t(title, 13, 'semibold', TXT, { minScale: 0.8 }),
       { type: 'spacer' },
-      t(`${fromCache ? ((ds && ds.stale) || '缓存') + ' · ' : ''}更新 ${ds && ds.updatedAt ? fmtTime(ds.updatedAt) : '--'}`, 10, 'regular', SUB, { minScale: 1 }),
+      t(`${fromCache ? ((ds && ds.stale) || '缓存') + ' · ' : ''}${when} 更新`, 10, 'medium', fromCache ? C_FEE : SUB, { minScale: 1 }),
     ],
   };
 }
@@ -1094,55 +1108,78 @@ function glass(children, extra) {
 
 /* ---------- 尺寸 ---------- */
 
+// 话费卡：名称 + 账期剩余天数在上，金额贴底（与仪表卡数值同一基线）
 function feeCard(ds, ins, size, extra) {
   const low = ins.lowFee;
   return glass([
     {
       type: 'stack', direction: 'row', alignItems: 'center', gap: 3,
       children: [
-        { type: 'image', src: 'sf-symbol:yensign.circle.fill', width: 10, height: 10, color: low ? WARN : C_FEE },
-        t(low ? '话费不足' : '剩余话费', 9, 'medium', low ? WARN : SUB, { minScale: 1 }),
+        { type: 'image', src: low ? 'sf-symbol:exclamationmark.circle.fill' : 'sf-symbol:yensign.circle.fill', width: 10, height: 10, color: low ? WARN : C_FEE },
+        t(low ? '余额不足' : '话费余额', 10, 'medium', low ? WARN : SUB, { minScale: 0.8 }),
       ],
     },
+    t(`本月剩 ${ins.daysLeft} 天`, 9, 'medium', SUB, { minScale: 0.8 }),
     { type: 'spacer' },
     {
       type: 'stack', direction: 'row', alignItems: 'end', gap: 1,
-      children: [t('¥', 11, 'semibold', low ? WARN : SUB, { minScale: 1 }), t(ds.fee.number, size || 22, 'bold', low ? WARN : TXT, { minScale: 0.6 })],
+      children: [t('¥', 12, 'semibold', low ? WARN : SUB, { minScale: 1 }), t(ds.fee.number, size || 22, 'bold', low ? WARN : TXT, { minScale: 0.6 })],
     },
-    t(`本月剩 ${ins.daysLeft} 天`, 9, 'medium', SUB, { minScale: 1 }),
-    ...(extra && extra.alignItems === 'center' ? [{ type: 'spacer' }] : []),
-  ], Object.assign({ gap: 2, padding: [7, 9], borderRadius: 16 }, extra || {}));
+  ], Object.assign({ gap: 1, padding: [7, 10], borderRadius: 16 }, extra || {}));
 }
 
-function statsStrip(ins, sparkW) {
+function forecastTag(ins, size) {
+  const f = ins.forecast;
+  return {
+    type: 'stack', direction: 'row', alignItems: 'center', gap: 3,
+    children: [
+      { type: 'image', src: `sf-symbol:${f.icon}`, width: size, height: size, color: f.color },
+      t(f.text, size, 'semibold', f.color, { minScale: 0.8 }),
+    ],
+  };
+}
+
+function statsStrip(ins) {
+  // 柱状图至少有 3 天数据才画，不然只是几条短横线
+  const enough = ins.hist.filter(v => v != null).length >= 3;
   return glass([
     {
-      type: 'stack', direction: 'row', alignItems: 'center', gap: 6,
+      type: 'stack', direction: 'row', alignItems: 'center', gap: 8,
       children: [
-        { type: 'image', src: sparkSvg(ins.hist, C_FLOW, 70, 14), width: sparkW || 46, height: 11 },
-        t(`今日 ${fmtMB(ins.todayMB)}`, 9, 'semibold', TXT, { minScale: 1 }),
-        t(`日均可用 ${fmtMB(ins.dailyMB)}`, 9, 'medium', SUB, { minScale: 1 }),
+        ...(enough ? [{ type: 'image', src: sparkSvg(ins.hist, C_FLOW, 70, 20), width: 35, height: 10 }] : []),
+        t(`今日 ${fmtMB(ins.todayMB)}`, 10, 'semibold', TXT, { minScale: 0.8 }),
+        t(`日均可用 ${fmtMB(ins.dailyMB)}`, 10, 'medium', SUB, { minScale: 0.8 }),
         { type: 'spacer' },
-        t(ins.forecast.text, 9, 'semibold', ins.forecast.color, { minScale: 0.8 }),
+        forecastTag(ins, 10),
       ],
     },
-  ], { padding: [6, 9], borderRadius: 12, gap: 0 });
+  ], { padding: [6, 10], borderRadius: 12, gap: 0 });
 }
 
 function refresh30() { return new Date(Date.now() + 30 * 60 * 1000).toISOString(); }
 
+// 其他流量 / 语音 的一行摘要，没数据的项不显示
+function extrasText(ds) {
+  return [
+    hasData(ds.otherFlow) ? `其他 ${ds.otherFlow.number} ${ds.otherFlow.unit || ''}` : '',
+    hasData(ds.voice) ? `语音 ${ds.voice.number} ${ds.voice.unit || ''}` : '',
+  ].filter(Boolean).join(' · ');
+}
+
 function buildSmall(title, ds, fromCache, ctx) {
   const ins = insights(ctx, ds);
+  const c = levelColor(ds.flow, C_FLOW);
+  const extras = extrasText(ds);
   return {
-    type: 'widget', padding: 12, gap: 5, backgroundGradient: bg(), refreshAfter: refresh30(),
+    type: 'widget', padding: 12, gap: 4, backgroundGradient: bg(), refreshAfter: refresh30(),
     children: [
       {
         type: 'stack', direction: 'row', alignItems: 'center', gap: 4,
         children: [
           { type: 'image', src: 'sf-symbol:antenna.radiowaves.left.and.right', width: 11, height: 11, color: C_FLOW },
-          t(title, 'caption1', 'semibold'),
+          t(title, 12, 'semibold', TXT, { minScale: 0.8 }),
           { type: 'spacer' },
-          t(`¥${ds.fee.number}`, 11, 'bold', ins.lowFee ? WARN : C_FEE, { minScale: 1 }),
+          t(`¥${ds.fee.number}`, 12, 'bold', ins.lowFee ? WARN : C_FEE, { minScale: 0.8 }),
         ],
       },
       {
@@ -1151,49 +1188,41 @@ function buildSmall(title, ds, fromCache, ctx) {
           {
             type: 'stack', direction: 'column', alignItems: 'start', gap: 0,
             children: [
-              t('剩余流量', 9, 'medium', SUB, { minScale: 1 }),
-              { type: 'stack', direction: 'row', alignItems: 'end', gap: 2, children: [t(ds.flow.number, 22, 'bold', TXT), t(ds.flow.unit || '', 9, 'semibold', SUB, { minScale: 1 })] },
+              t(ds.flow.title || '剩余流量', 10, 'medium', SUB, { minScale: 1 }),
+              { type: 'stack', direction: 'row', alignItems: 'end', gap: 2, children: [t(ds.flow.number, 24, 'bold', TXT, { minScale: 0.6 }), t(ds.flow.unit || '', 10, 'semibold', SUB, { minScale: 1 })] },
             ],
           },
           { type: 'spacer' },
           {
-            type: 'stack', direction: 'column', alignItems: 'center', gap: -3,
-            children: [
-              { type: 'image', src: gaugeSvg(ds.flow.percent, C_FLOW, 64), width: 42, height: 25 },
-              t(pctText(ds.flow) || '0%', 9, 'bold', C_FLOW, { minScale: 1 }),
-            ],
+            type: 'stack', direction: 'column', alignItems: 'center', width: 44, height: 25,
+            backgroundImage: gaugeSvg(ds.flow.percent, c, 64, 9),
+            children: [{ type: 'spacer' }, t(pctText(ds.flow), 9, 'bold', c, { minScale: 1 })],
           },
         ],
       },
-      {
-        type: 'stack', direction: 'row', alignItems: 'end', gap: 5,
-        children: [
-          { type: 'image', src: sparkSvg(ins.hist, C_FLOW, 70, 14), width: 44, height: 11 },
-          t(`今日 ${fmtMB(ins.todayMB)}`, 9, 'semibold', TXT, { minScale: 1 }),
-        ],
-      },
-      t(`其他 ${ds.otherFlow ? ds.otherFlow.number + (ds.otherFlow.unit || '') : '--'} · 语音 ${ds.voice.number}${ds.voice.unit || ''}`, 9, 'medium', SUB, { minScale: 0.75 }),
-      t(`日均可用 ${fmtMB(ins.dailyMB)} · ${ins.forecast.text}`, 9, 'semibold', ins.forecast.color, { minScale: 0.7 }),
+      t(`今日 ${fmtMB(ins.todayMB)} · 日均 ${fmtMB(ins.dailyMB)}`, 10, 'semibold', TXT, { minScale: 0.7 }),
+      ...(extras ? [t(extras, 10, 'medium', SUB, { minScale: 0.7 })] : []),
+      forecastTag(ins, 10),
     ],
   };
 }
 
 function buildMedium(title, ds, fromCache, ctx) {
   const ins = insights(ctx, ds);
+  // 没有语音包 / 其他流量时不留空卡，剩下的卡平分宽度
+  const h = 82;
+  const cards = [
+    feeCard(ds, ins, 22, { flex: 1.2, height: h }),
+    gaugeCard('wifi', C_FLOW, ds.flow, '剩余流量', { height: h }),
+    ...(hasData(ds.otherFlow) ? [gaugeCard('globe.asia.australia.fill', C_OTHER, ds.otherFlow, '其他流量', { height: h })] : []),
+    ...(hasData(ds.voice) ? [gaugeCard('phone.fill', C_VOICE, ds.voice, '剩余语音', { height: h })] : []),
+  ];
   return {
-    type: 'widget', padding: [10, 11], gap: 6, backgroundGradient: bg(), refreshAfter: refresh30(),
+    type: 'widget', padding: [10, 12], gap: 6, backgroundGradient: bg(), refreshAfter: refresh30(),
     children: [
       header(title, ds, fromCache),
-      {
-        type: 'stack', direction: 'row', alignItems: 'center', gap: 6, flex: 1,
-        children: [
-          feeCard(ds, ins, 21, { width: 84, height: 82, alignItems: 'center' }),
-          gaugeCard('wifi', C_FLOW, ds.flow, '剩余流量', { height: 82 }),
-          gaugeCard('globe.asia.australia.fill', C_OTHER, ds.otherFlow, '其他流量', { height: 82 }),
-          gaugeCard('phone.fill', C_VOICE, ds.voice, '剩余语音', { height: 82 }),
-        ],
-      },
-      statsStrip(ins, 40),
+      { type: 'stack', direction: 'row', alignItems: 'center', gap: 6, flex: 1, children: cards },
+      statsStrip(ins),
       ...(ds.planDebug ? [t(ds.planDebug, 'caption2', 'regular', SUB, { maxLines: 3 })] : []),
     ],
   };
@@ -1212,21 +1241,21 @@ function buildLarge(title, ds, fromCache, ctx) {
       {
         type: 'stack', direction: 'row', alignItems: 'center', gap: 8,
         children: [
-          feeCard(ds, ins, 30, { flex: 1, height: 74, padding: [9, 12] }),
+          feeCard(ds, ins, 28, { flex: 1, height: 84, padding: [9, 12] }),
           glass([
             t('当前号码', 9, 'medium', SUB, { minScale: 1 }),
             t(masked || '--', 13, 'semibold', TXT, { family: 'Menlo', minScale: 0.7 }),
             { type: 'spacer' },
-            t(ins.forecast.text, 10, 'semibold', ins.forecast.color, { minScale: 0.7 }),
-          ], { flex: 1, height: 74, gap: 2, padding: [9, 12], borderRadius: 16 }),
+            forecastTag(ins, 10),
+          ], { flex: 1, height: 84, gap: 2, padding: [9, 12], borderRadius: 16 }),
         ],
       },
       {
         type: 'stack', direction: 'row', alignItems: 'center', gap: 8,
         children: [
           gaugeCard('wifi', C_FLOW, ds.flow, '剩余流量', { gw: 62, numSize: 18 }),
-          gaugeCard('globe.asia.australia.fill', C_OTHER, ds.otherFlow, '其他流量', { gw: 62, numSize: 18 }),
-          gaugeCard('phone.fill', C_VOICE, ds.voice, '剩余语音', { gw: 62, numSize: 18 }),
+          ...(hasData(ds.otherFlow) ? [gaugeCard('globe.asia.australia.fill', C_OTHER, ds.otherFlow, '其他流量', { gw: 62, numSize: 18 })] : []),
+          ...(hasData(ds.voice) ? [gaugeCard('phone.fill', C_VOICE, ds.voice, '剩余语音', { gw: 62, numSize: 18 })] : []),
         ],
       },
       glass([
@@ -1253,8 +1282,9 @@ function buildLarge(title, ds, fromCache, ctx) {
 
 function buildLockScreen(title, ds, family, ctx) {
   const ins = insights(ctx, ds);
+  const voiceText = hasData(ds.voice) ? ` · ${ds.voice.number}分` : '';
   if (family === 'accessoryInline') {
-    return { type: 'widget', children: [{ type: 'text', text: `¥${ds.fee.number} · ${ds.flow.number}${ds.flow.unit} · ${ds.voice.number}分`, maxLines: 1, minScale: 0.6 }] };
+    return { type: 'widget', children: [{ type: 'text', text: `¥${ds.fee.number} · ${ds.flow.number}${ds.flow.unit}${voiceText}`, maxLines: 1, minScale: 0.6 }] };
   }
   if (family === 'accessoryCircular') {
     const hasPct = ds.flow && ds.flow.percent > 0;
@@ -1283,7 +1313,7 @@ function buildLockScreen(title, ds, family, ctx) {
     type: 'widget', padding: [2, 4], gap: 2,
     children: [
       { type: 'text', text: `¥${ds.fee.number}${ins.lowFee ? ' · 话费不足' : ''}`, font: { size: 'footnote', weight: 'bold' }, maxLines: 1, minScale: 0.6 },
-      { type: 'text', text: `流量 ${ds.flow.number} ${ds.flow.unit} · 语音 ${ds.voice.number}分`, font: { size: 'caption2', weight: 'semibold' }, maxLines: 1, minScale: 0.6 },
+      { type: 'text', text: `流量 ${ds.flow.number} ${ds.flow.unit}${voiceText}`, font: { size: 'caption2', weight: 'semibold' }, maxLines: 1, minScale: 0.6 },
       { type: 'text', text: ins.todayMB != null ? `今日 ${fmtMB(ins.todayMB)} · 日均 ${fmtMB(ins.dailyMB)}` : `还剩 ${ins.daysLeft} 天`, font: { size: 'caption2' }, opacity: 0.7, maxLines: 1, minScale: 0.6 },
     ],
   };
