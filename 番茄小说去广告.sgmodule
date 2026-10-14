@@ -6,15 +6,23 @@
 #!openUrl=https://apps.apple.com/app/id1468454200
 #!category=zky-modified
 
-# 原文件是 Egern 的 YAML 格式（rules: - domain:），Surge 无法识别，这里改写为 Surge 语法，规则与可莉原版一致
+# 原文件是 Egern 的 YAML 格式（rules: - domain:），Surge 无法识别，这里改写为 Surge 语法；在可莉原版基础上补了广告分区节点、素材图片和穿山甲 SDK
 # 字节系 App 会通过自家 HTTPDNS 直连 IP，所有规则都加上 extended-matching，按 SNI / Host 也能命中
 # 统一使用 REJECT 而非 REJECT-DROP：请求立即失败，开屏不必等待超时；频繁重试时 Surge 会自动升级为 DROP
 
 [Rule]
 # 广告
-DOMAIN,ads3-normal.zijieapi.com,REJECT,extended-matching,pre-matching
-DOMAIN,ads5-normal.zijieapi.com,REJECT,extended-matching,pre-matching
+# 广告接口除 ads3/ads5-normal 外还有 -hl、-lf、-lq、-hj 等分区节点，只拦主节点时 App 会换到这些节点，阅读页底部横幅照样出现
+DOMAIN-WILDCARD,ads*-normal*.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,ad.zijieapi.com,REJECT,extended-matching,pre-matching
 DOMAIN,vas.snssdk.com,REJECT,extended-matching,pre-matching
+# 广告素材图片（横幅里的配图、封面）
+DOMAIN-WILDCARD,p*-ad-sign.byteimg.com,REJECT,extended-matching,pre-matching
+# 穿山甲 / GroMore 广告 SDK（pangolin-sdk-toutiao.com、-b.com、1~4.com 等）
+DOMAIN-KEYWORD,pangolin-sdk-toutiao,REJECT,extended-matching,pre-matching
+DOMAIN,pangolin.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN-SUFFIX,pangle.cn,REJECT,extended-matching,pre-matching
+DOMAIN-SUFFIX,pangle.io,REJECT,extended-matching,pre-matching
 DOMAIN,zlink.ugsdk.cn,REJECT,extended-matching,pre-matching
 
 # 日志、埋点、监控、AB 实验
