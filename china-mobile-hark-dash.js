@@ -1128,6 +1128,25 @@ function feeCard(ds, ins, size, extra) {
   ], Object.assign({ gap: 1, padding: [7, 10], borderRadius: 16 }, extra || {}));
 }
 
+// 中号用的话费卡：和仪表卡同一结构（名称 / 主体 / 底行），各卡等宽居中，金额占仪表的位置
+function feeTile(ds, ins, size, height) {
+  const low = ins.lowFee;
+  return glass([
+    {
+      type: 'stack', direction: 'row', alignItems: 'center', gap: 3,
+      children: [
+        { type: 'image', src: low ? 'sf-symbol:exclamationmark.circle.fill' : 'sf-symbol:yensign.circle.fill', width: 10, height: 10, color: low ? WARN : C_FEE },
+        t(low ? '余额不足' : '话费余额', 10, 'medium', low ? WARN : SUB, { minScale: 0.8 }),
+      ],
+    },
+    {
+      type: 'stack', direction: 'row', alignItems: 'end', gap: 1, height: 30,
+      children: [t('¥', 12, 'semibold', low ? WARN : SUB, { minScale: 1 }), t(ds.fee.number, size, 'bold', low ? WARN : TXT, { minScale: 0.6 })],
+    },
+    { type: 'stack', direction: 'row', height: 19, children: [t(`本月剩 ${ins.daysLeft} 天`, 10, 'medium', SUB, { minScale: 0.8 })] },
+  ], { flex: 1, alignItems: 'center', gap: 3, padding: [7, 6], borderRadius: 16, height });
+}
+
 function forecastTag(ins, size) {
   const f = ins.forecast;
   return {
@@ -1209,14 +1228,14 @@ function buildSmall(title, ds, fromCache, ctx) {
 
 function buildMedium(title, ds, fromCache, ctx) {
   const ins = insights(ctx, ds);
-  // 没有语音包 / 其他流量时不留空卡，剩下的卡平分宽度
+  // 没有语音包 / 其他流量时不留空卡，剩下的卡平分宽度；四张卡时金额字号收小一点
   const h = 82;
-  const cards = [
-    feeCard(ds, ins, 22, { flex: 1.2, height: h }),
+  const gauges = [
     gaugeCard('wifi', C_FLOW, ds.flow, '剩余流量', { height: h }),
     ...(hasData(ds.otherFlow) ? [gaugeCard('globe.asia.australia.fill', C_OTHER, ds.otherFlow, '其他流量', { height: h })] : []),
     ...(hasData(ds.voice) ? [gaugeCard('phone.fill', C_VOICE, ds.voice, '剩余语音', { height: h })] : []),
   ];
+  const cards = [feeTile(ds, ins, gauges.length >= 3 ? 20 : 24, h), ...gauges];
   return {
     type: 'widget', padding: [10, 12], gap: 6, backgroundGradient: bg(), refreshAfter: refresh30(),
     children: [
