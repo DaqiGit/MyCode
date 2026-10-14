@@ -1,0 +1,57 @@
+#!name=番茄小说去广告
+#!desc=移除番茄小说开屏广告、文章底部和章末广告、听书页面广告，以及悬浮部件和底栏多余的福利标签。
+#!author=可莉🅥[https://github.com/luestr/ProxyResource/blob/main/README.md]
+#!homepage=https://hub.kelee.one
+#!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/DragonRead.png
+#!openUrl=https://apps.apple.com/app/id1468454200
+#!category=zky-modified
+
+# 原文件是 Egern 的 YAML 格式（rules: - domain:），Surge 无法识别，这里改写为 Surge 语法，规则与可莉原版一致
+# 字节系 App 会通过自家 HTTPDNS 直连 IP，所有规则都加上 extended-matching，按 SNI / Host 也能命中
+# 统一使用 REJECT 而非 REJECT-DROP：请求立即失败，开屏不必等待超时；频繁重试时 Surge 会自动升级为 DROP
+
+[Rule]
+# 广告
+DOMAIN,ads3-normal.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,ads5-normal.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,vas.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,zlink.ugsdk.cn,REJECT,extended-matching,pre-matching
+
+# 日志、埋点、监控、AB 实验
+DOMAIN,log3-applog.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,log5-applog.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,rtlog3-applog.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,rtlog5-applog.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,mon3-misc.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,mon11-misc.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,mon11-misc-lq.fqnovel.com,REJECT,extended-matching,pre-matching
+DOMAIN,mon.toutiaocloud.com,REJECT,extended-matching,pre-matching
+DOMAIN,mon.toutiaocloud.net,REJECT,extended-matching,pre-matching
+DOMAIN,abtest3-misc.zijieapi.com,REJECT,extended-matching,pre-matching
+
+# 直播、小游戏
+DOMAIN,webcast-open.douyin.com,REJECT,extended-matching,pre-matching
+DOMAIN,p3-webcast-sign.douyinpic.com,REJECT,extended-matching,pre-matching
+DOMAIN,p11-webcast-sign.douyinpic.com,REJECT,extended-matching,pre-matching
+DOMAIN,lf-webcast-gr-sourcecdn.bytegecko.com,REJECT,extended-matching,pre-matching
+DOMAIN,minigame3-normal.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,minigame5-normal.zijieapi.com,REJECT,extended-matching,pre-matching
+
+# 动态资源下发（Gecko 离线包、特效），福利页、活动页依赖这些资源
+DOMAIN,gecko3.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,gecko5.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,lf-normal-gr-sourcecdn.bytegecko.com,REJECT,extended-matching,pre-matching
+DOMAIN,effect.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,p3-developer.bytemaimg.com,REJECT,extended-matching,pre-matching
+
+# 其他字节 SDK（配置、安全风控、隐私合规、反馈等）
+# 如果登录、支付、验证码或反馈出现异常，先注释掉这一组排查
+DOMAIN,i.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,is.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,is-lq.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,security.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,mssdk.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,timon.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,vcs.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,ma.zijieapi.com,REJECT,extended-matching,pre-matching
+DOMAIN,feedback-c.zijieapi.com,REJECT,extended-matching,pre-matching
