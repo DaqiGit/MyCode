@@ -54,9 +54,9 @@ DOMAIN,p3-developer.bytemaimg.com,REJECT,extended-matching,pre-matching
 
 # 其他字节 SDK（配置、安全风控、隐私合规、反馈等）
 # 如果登录、支付、验证码或反馈出现异常，先注释掉这一组排查
-DOMAIN,i.snssdk.com,REJECT,extended-matching,pre-matching
-DOMAIN,is.snssdk.com,REJECT,extended-matching,pre-matching
-DOMAIN,is-lq.snssdk.com,REJECT,extended-matching,pre-matching
+DOMAIN,i.snssdk.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,is.snssdk.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,is-lq.snssdk.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,security.snssdk.com,REJECT,extended-matching,pre-matching
 DOMAIN,mssdk.zijieapi.com,REJECT,extended-matching,pre-matching
 DOMAIN,timon.zijieapi.com,REJECT,extended-matching,pre-matching
