@@ -27,12 +27,14 @@ DOMAIN-WILDCARD,v*-ex-reading-video.fqnovelvod.com,REJECT-DROP,extended-matching
 # 日志、埋点、监控、AB 实验
 DOMAIN,log3-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,log5-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,log0-applog-lf.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,rtlog3-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,rtlog5-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,rtlog5-applog-lf.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon3-misc.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon11-misc.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon11-misc-lq.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,mon11-misc-lf.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon.toutiaocloud.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon.toutiaocloud.net,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,abtest3-misc.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
@@ -51,6 +53,7 @@ DOMAIN,minigame5-normal.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 # 动态资源下发（Gecko 离线包、特效），福利页、活动页依赖这些资源
 DOMAIN,gecko3.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,gecko5.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,gecko5-gl2.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,lf-normal-gr-sourcecdn.bytegecko.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,effect.snssdk.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,p3-developer.bytemaimg.com,REJECT-DROP,extended-matching,pre-matching
