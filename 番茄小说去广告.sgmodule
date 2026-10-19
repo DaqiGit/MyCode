@@ -20,12 +20,16 @@ DOMAIN,pangolin.snssdk.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN-SUFFIX,pangle.cn,REJECT-DROP,extended-matching,pre-matching
 DOMAIN-SUFFIX,pangle.io,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,zlink.ugsdk.cn,REJECT-DROP,extended-matching,pre-matching
+# 阅读页正文里插的短剧视频卡片（视频流）；卡片标题和「播放全集」由阅读接口下发，只拦域名会留个空框
+# 同在 fqnovelvod.com 下的 v*-fq-tts 是听书音频，不要整个后缀拦
+DOMAIN-WILDCARD,v*-ex-reading-video.fqnovelvod.com,REJECT-DROP,extended-matching,pre-matching
 
 # 日志、埋点、监控、AB 实验
 DOMAIN,log3-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,log5-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,rtlog3-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,rtlog5-applog.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,rtlog5-applog-lf.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon3-misc.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon11-misc.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,mon11-misc-lq.fqnovel.com,REJECT-DROP,extended-matching,pre-matching
@@ -35,9 +39,12 @@ DOMAIN,abtest3-misc.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 
 # 直播、小游戏
 DOMAIN,webcast-open.douyin.com,REJECT-DROP,extended-matching,pre-matching
+DOMAIN,webcast5-open-lf.douyin.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,p3-webcast-sign.douyinpic.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,p11-webcast-sign.douyinpic.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,lf-webcast-gr-sourcecdn.bytegecko.com,REJECT-DROP,extended-matching,pre-matching
+# n98 是 CDN 节点编号，会变，用通配
+DOMAIN-WILDCARD,n*-lf-webcast-cdn-tos-ncdn.bytegecko.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,minigame3-normal.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,minigame5-normal.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 
