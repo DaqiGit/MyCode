@@ -5,6 +5,7 @@
 - 按商品缓存比价结果，重复打开同一商品不再请求
 - 单个请求超时 4s，失败时尽快返回原页面
 - 令牌变化时才通知
+- 商品介绍页立即返回，比价由页面内脚本异步请求 /__jdp/{id}（本脚本拦截并本地应答），不再阻塞页面加载
 可选持久化键：mmb_v = V1 | V2（接口版本），mmb_cache_min = 缓存分钟数（默认 60，0 关闭）
 */
 const NAME = '京东比价';
@@ -22,14 +23,28 @@ const url = $request.url;
 if (url.includes('/baoliao/center/menu')) {
     saveToken($request.body);
     $done({});
-} else {
-    const body = $response.body;
-    main(body)
-        .then(html => $done({body: inject(body, html)}))
+} else if (/\/__jdp\/\d+/.test(url)) {
+    // 页面内异步请求：在 Surge 内直接生成比价 HTML 应答，不发往京东
+    const id = url.match(/\/__jdp\/(\d+)/)[1];
+    main(id)
+        .then(reply)
         .catch(err => {
             console.log(`${NAME} 失败：${err && err.message || err}`);
-            $done({body: inject(body, errorHTML(err && err.message || String(err)))});
+            reply(errorHTML(err && err.message || String(err)));
         });
+} else {
+    // 商品介绍页：命中缓存直接嵌入，否则先放占位框，页面立即显示
+    const id = (url.match(/product\/graphext\/(\d+)\.html/) || [])[1];
+    if (!id) $done({});
+    else {
+        const headers = {...$response.headers};
+        for (const k of Object.keys(headers)) if (/^content-security-policy/i.test(k)) delete headers[k];
+        $done({headers, body: inject($response.body, cachedHTML(id) || loaderHTML(id))});
+    }
+}
+
+function reply(html) {
+    $done({response: {status: 200, headers: {'Content-Type': 'text/html;charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*'}, body: html}});
 }
 
 function saveToken(body) {
@@ -43,14 +58,21 @@ function saveToken(body) {
     if (!old || parseQuery(old).c_mmbDevId !== devId) $notification.post(NAME, '获取令牌成功 🎉', '现在可以在京东商品页查看比价');
 }
 
-async function main() {
-    const id = (url.match(/product\/graphext\/(\d+)\.html/) || [])[1];
-    if (!id) throw new Error('京东 URL 匹配失败');
+function cacheTTL() {
+    return Number($persistentStore.read('mmb_cache_min') ?? 60) * 60e3;
+}
 
-    const ttl = Number($persistentStore.read('mmb_cache_min') ?? 60) * 60e3;
+function cachedHTML(id) {
+    const ttl = cacheTTL(), hit = readCache()[id];
+    return ttl > 0 && hit && Date.now() - hit.t < ttl ? priceHTML(hit.list, hit.t) : null;
+}
+
+async function main(id) {
+    const cached = cachedHTML(id);
+    if (cached) return cached;
+
+    const ttl = cacheTTL();
     const cache = readCache();
-    const hit = cache[id];
-    if (ttl > 0 && hit && Date.now() - hit.t < ttl) return priceHTML(hit.list, hit.t);
 
     const ck = getCk();
     const v2 = $persistentStore.read('mmb_v') === 'V2';
@@ -152,6 +174,13 @@ function priceHTML(list, cachedAt) {
     }).join('');
     const note = cachedAt ? `<div class="jdp-note">缓存于 ${Math.max(1, Math.round((Date.now() - cachedAt) / 60e3))} 分钟前</div>` : '';
     return `<div class="jdp"><table><thead><tr><th>类型</th><th>日期</th><th>价格</th><th>差价</th></tr></thead><tbody>${rows}</tbody></table>${note}</div>${STYLE}`;
+}
+
+function loaderHTML(id) {
+    return `<div id="jdp-box"><div class="jdp jdp-note" style="text-align:center">比价加载中…</div></div>${STYLE}`
+        + `<script>(function(){var b=document.getElementById('jdp-box');`
+        + `fetch('https://in.m.jd.com/__jdp/${id}',{cache:'no-store'}).then(function(r){return r.text()})`
+        + `.then(function(h){b.innerHTML=h}).catch(function(){b.innerHTML='<div class="jdp jdp-err">比价加载失败</div>'})})()</script>`;
 }
 
 function errorHTML(msg) {
