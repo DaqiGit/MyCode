@@ -1,16 +1,21 @@
 // ==UserScript==
 // @name         斗鱼禁P2P + 精简
-// @namespace    https://github.com/
-// @version      1.1.0
+// @namespace    https://github.com/DaqiGit/MyCode
+// @version      1.1.1
 // @description  禁止斗鱼网页播放器使用 P2P/PCDN（不再占用上传带宽），并隐藏广告、活动挂件、礼物特效等干扰元素
 // @match        *://*.douyu.com/*
 // @run-at       document-start
 // @grant        none
 // @inject-into  page
+// @downloadURL  https://raw.githubusercontent.com/DaqiGit/MyCode/main/%E6%96%97%E9%B1%BC%E7%A6%81P2P%E7%B2%BE%E7%AE%80.user.js
+// @updateURL    https://raw.githubusercontent.com/DaqiGit/MyCode/main/%E6%96%97%E9%B1%BC%E7%A6%81P2P%E7%B2%BE%E7%AE%80.user.js
 // ==/UserScript==
 
 (function () {
     'use strict';
+
+    // 用来确认脚本是否真的跑起来了：F12 → Console 里能看到这一行
+    console.info('[斗鱼禁P2P精简] 已运行', location.href);
 
     const CONFIG = {
         // 改写拉流接口返回，让播放器直接走 CDN，不加载 P2P SDK
