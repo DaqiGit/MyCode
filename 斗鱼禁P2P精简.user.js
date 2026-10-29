@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         斗鱼禁P2P + 精简
 // @namespace    https://github.com/
-// @version      1.0.0
+// @version      1.1.0
 // @description  禁止斗鱼网页播放器使用 P2P/PCDN（不再占用上传带宽），并隐藏广告、活动挂件、礼物特效等干扰元素
 // @match        *://*.douyu.com/*
 // @run-at       document-start
@@ -26,8 +26,8 @@
         HIDE_RANK: true,
         // 隐藏品牌/活动房间顶部的装修大横幅，让播放器回到页面顶部
         HIDE_ROOM_DECOR: true,
-        // 隐藏播放器下方的礼物栏（播放器高度是固定算好的，隐藏后那里会留一条空白）
-        HIDE_GIFT_BAR: false,
+        // 隐藏播放器下方的任务/礼物栏，空出来的高度让给视频
+        HIDE_GIFT_BAR: true,
     };
 
     // ---------- 禁 P2P：改写 getH5Play 接口 ----------
@@ -150,13 +150,16 @@
     }
     if (CONFIG.HIDE_BOTTOM) hide.push('#js-bottom-left');
     if (CONFIG.HIDE_RANK) hide.push('.layout-Player-rank');
-    if (CONFIG.HIDE_GIFT_BAR) hide.push('#js-player-toolbar');
-
     let extraCss = '';
+    if (CONFIG.HIDE_GIFT_BAR) {
+        // 礼物栏外层容器是定高的，要连它一起藏；视频区是绝对定位、底部留了礼物栏的高度，改成贴底
+        hide.push('[class*="interactive__"]:has(> #js-player-toolbar)');
+        extraCss += '[class*="player__"]:has(> [class*="interactive__"] > #js-player-toolbar) > [class*="stream__"] { bottom: 0 !important; }\n';
+    }
     if (CONFIG.HIDE_ROOM_DECOR) {
         // 装修房间里 #root 下除播放器外的都是横幅/装修块，且 #root 会被上移到顶栏下面
         hide.push('#root:has(> [class*="playerWrap__"]) > :not([class*="playerWrap__"])');
-        extraCss = '#root:has(> [class*="playerWrap__"]) { margin-top: 0 !important; top: 0 !important; transform: none !important; }';
+        extraCss += '#root:has(> [class*="playerWrap__"]) { margin-top: 0 !important; top: 0 !important; transform: none !important; }\n';
     }
 
     if (hide.length) {
