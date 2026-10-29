@@ -1,0 +1,21 @@
+name: "Telegram 跳转"
+desc: "将 t.me 链接重定向到 Nagram。要换客户端，改下面 argument：Telegram / Nagram / Swiftgram / Turrit / iMe / Nicegram / Lingogram / Regram"
+author: "panda𝕏"
+icon: "https://iili.io/KQX347S.png"
+category: "zky"
+
+http:
+  mitm:
+    - "t.me"
+    - "telegram.me"
+  script:
+    - match: "^https?://(t\\.me|telegram\\.me)/.+"
+      name: "TgRedirect"
+      type: request
+      timeout: 10
+      argument: "Nagram"
+
+script-providers:
+  "TgRedirect":
+    url: "https://raw.githubusercontent.com/DaqiGit/MyCode/main/Stash/scripts/TgRedirect.js"
+    interval: 86400

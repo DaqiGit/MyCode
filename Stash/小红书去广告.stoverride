@@ -1,0 +1,32 @@
+name: "小红书去广告"
+desc: "过滤信息流推广，移除图片及视频水印，如有异常，请先清除缓存再尝试。"
+author: "RuCu6[https://github.com/RuCu6], fmz200[https://github.com/fmz200]"
+icon: "https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/RedPaper.png"
+category: "zky"
+
+http:
+  mitm:
+    - "ci.xiaohongshu.com"
+    - "edith.xiaohongshu.com"
+    - "rec.xiaohongshu.com"
+    - "so.xiaohongshu.com"
+    - "www.xiaohongshu.com"
+  url-rewrite:
+    - "^https:\\/\\/ci\\.xiaohongshu\\.com\\/system_config\\/watermark - reject-img"
+    - "^https:\\/\\/edith\\.xiaohongshu\\.com\\/api\\/sns\\/(?:v1\\/surprisebox\\/(?:get_style|open|submit_action)|v2\\/guide\\/user_banner|v3\\/note\\/guide) - reject-dict"
+    - "^https:\\/\\/www\\.xiaohongshu\\.com\\/api\\/(?:marketing\\/box\\/trigger\\?|sns\\/(?:v1\\/ads\\/resource|v2\\/hey\\/\\w+\\/hey_gallery)) - reject-dict"
+  body-rewrite:
+    - "^https:\\/\\/edith\\.xiaohongshu\\.com\\/api\\/sns\\/v1\\/search\\/banner_list$ response-jq 'if .data then .data = {} else . end'"
+    - "^https:\\/\\/edith\\.xiaohongshu\\.com\\/api\\/sns\\/v1\\/search\\/hot_list$ response-jq 'if .data.items then .data.items = [] else . end'"
+    - "^https:\\/\\/edith\\.xiaohongshu\\.com\\/api\\/sns\\/v4\\/search\\/hint response-jq 'if .data.hint_words then .data.hint_words = [] else . end'"
+    - "^https:\\/\\/edith\\.xiaohongshu\\.com\\/api\\/sns\\/v4\\/search\\/trending\\? response-jq 'if .data.queries then .data.queries = [] else . end | if .data.hint_word then .data.hint_word = {} else . end'"
+  script:
+    - match: "^https:\\/\\/(?:edith|rec|so|www)\\.xiaohongshu\\.com\\/api\\/sns\\/(?:v1\\/(?:note\\/(?:imagefeed|live_photo\\/save)|system_service\\/config\\?|interaction\\/comment\\/video\\/download)|v2\\/(?:note\\/(?:feed|widgets)|system_service\\/splash_config|user\\/followings\\/followfeed)|v3\\/note\\/videofeed|v4\\/(?:followfeed\\?|note\\/videofeed)|v5\\/(?:note\\/comment\\/list|recommend\\/user\\/follow_recommend\\?)|v6\\/homefeed\\?|v10\\/(?:search\\/notes\\?|note\\/video\\/save))"
+      name: "小红书去广告"
+      type: "response"
+      require-body: true
+
+script-providers:
+  "小红书去广告":
+    url: "https://kelee.one/Resource/JavaScript/RedPaper/RedPaper_remove_ads.js"
+    interval: 86400

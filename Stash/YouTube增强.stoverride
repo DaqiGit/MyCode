@@ -1,0 +1,89 @@
+name: "YouTube 增强"
+desc: "去除油管广告，支持后台播放、画中画、自动最高画质、双语字幕。转自 IBL3ND 的 Egern 模块，参数按原模块默认值写死在 argument 里"
+author: "gholts"
+icon: "https://iili.io/KQ67Yxa.png"
+category: "zky"
+
+http:
+  mitm:
+    - "*.googlevideo.com"
+    - "youtubei.googleapis.com"
+    - "www.youtube.com"
+    - "m.youtube.com"
+    - "s.youtube.com"
+  url-rewrite:
+    - "^https:\\/\\/www\\.youtube\\.com\\/(pagead|pcs)\\/ - reject"
+    - "^https:\\/\\/s\\.youtube\\.com\\/api\\/stats\\/ads - reject"
+    # 字幕翻译请求改成 subtype=Translate，交给下面的双语字幕脚本处理
+    - "^https://((?:www|m)\\.youtube\\.com/api/timedtext\\?)([^#]+)&tlang=([^&#]+)&([^#]*)(#.*)?$ https://$1$2&$4&subtype=Translate$5 302"
+    - "^https://((?:www|m)\\.youtube\\.com/api/timedtext\\?)([^#]+)&tlang=([^&#]+)(#.*)?$ https://$1$2&subtype=Translate$4 302"
+    - "^https://((?:www|m)\\.youtube\\.com/api/timedtext\\?)tlang=([^&#]+)&([^#]*)(#.*)?$ https://$1$3&subtype=Translate$4 302"
+    - "^https://((?:www|m)\\.youtube\\.com/api/timedtext\\?)tlang=([^&#]+)(#.*)?$ https://$1subtype=Translate$3 302"
+  script:
+    - match: "^https:\\/\\/youtubei\\.googleapis\\.com\\/youtubei\\/v1\\/player\\/ad_break(?:\\?.*)?$"
+      name: "youtube-request"
+      type: request
+    - match: "^https:\\/\\/youtubei\\.googleapis\\.com\\/youtubei\\/v1\\/offline\\/get_download_action(?:\\?.*)?$"
+      name: "youtube-response"
+      type: response
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+      argument: '{"nativeDownload":true}'
+    - match: "^https:\\/\\/youtubei\\.googleapis\\.com\\/youtubei\\/v1\\/player(?:\\?.*)?$"
+      name: "youtube-request"
+      type: request
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+      argument: '{"nativeDownload":true}'
+    - match: "^https:\\/\\/youtubei\\.googleapis\\.com\\/youtubei\\/v1\\/(?:navigation\\/resolve_url|browse|next|player|search|reel\\/reel_watch_sequence|guide|account\\/get_setting|get_watch|log_event|config)(?:\\?.*)?$"
+      name: "youtube-response"
+      type: response
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+      argument: '{"blockUpload":true,"blockShorts":true,"blockGames":true,"blockVerticalLive":true,"jumpAhead":true,"autoHd":true,"blockStore":true}'
+    - match: "^https?:\\/\\/[\\w-]+\\.googlevideo\\.com\\/initplayback(?:\\?.*)?$"
+      name: "youtube-response"
+      type: response
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+      argument: '{"blockGames":true,"blockVerticalLive":true,"jumpAhead":true,"autoHd":true,"blockStore":true}'
+    - match: "^https?:\\/\\/[\\w-]+\\.googlevideo\\.com\\/initplayback(?:\\?.*)?$"
+      name: "youtube-request"
+      type: request
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+    - match: "^https?:\\/\\/[\\w-]+\\.googlevideo\\.com\\/videoplayback"
+      name: "youtube-request"
+      type: request
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+      argument: '{"autoHd":true}'
+    - match: "^https:\\/\\/youtubei\\.googleapis\\.com\\/youtubei\\/v1\\/log_event"
+      name: "youtube-request"
+      type: request
+      require-body: true
+      binary-mode: true
+      max-size: 3145728
+    - match: "^https://(?:www|m)\\.youtube\\.com/api/timedtext(?:\\?|$)"
+      name: "youtube-dual-subs"
+      type: response
+      require-body: true
+      max-size: 3145728
+      argument: '{"subtitle_type":"Translate","show_only_auto_translation":false}'
+
+script-providers:
+  "youtube-request":
+    url: "https://raw.githubusercontent.com/IBL3ND/module/refs/heads/main/youtube-request.js"
+    interval: 86400
+  "youtube-response":
+    url: "https://raw.githubusercontent.com/IBL3ND/module/refs/heads/main/youtube-response.js"
+    interval: 86400
+  "youtube-dual-subs":
+    url: "https://raw.githubusercontent.com/IBL3ND/js/refs/heads/main/YT-CC-ASR-Auto.js"
+    interval: 86400

@@ -1,0 +1,19 @@
+name: "酷安去广告"
+desc: "移除酷安开屏广告、首页信息流推广、发现页推广卡片、动态详情页商品推广和评论区广告，以及搜索热词。"
+author: "RuCu6[https://github.com/RuCu6], 可莉🅥[https://github.com/luestr/ProxyResource/blob/main/README.md]"
+icon: "https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/CoolApk.png"
+category: "zky"
+
+http:
+  mitm:
+    - "api.coolapk.com"
+    - "api2.coolapk.com"
+  url-rewrite:
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/search\\?.*type=hotSearch - reject-dict"
+  body-rewrite:
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/feed\\/detail\\? response-jq 'if (.data | type) == \"object\" then .data |= with_entries(if IN(.key; \"hotReplyRows\", \"topReplyRows\") and (.value | type) == \"array\" then .value |= map(select(.id?)) elif IN(.key; \"detailSponsorCard\", \"include_goods\", \"include_goods_ids\") then .value = [] else . end) else . end'"
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/feed\\/replyList response-jq 'if (.data | type) == \"array\" then .data |= map(select(.id?)) else . end'"
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/main\\/indexV8 response-jq 'if (.data | type) == \"array\" then .data |= map(select(.entityTemplate? != \"sponsorCard\" and (.entityId? | tostring | IN(\"8639\", \"29349\", \"33006\", \"32557\") | not) and (.title? // \"\" | tostring | test(\"值得买|红包\") | not))) else . end'"
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/main\\/init response-jq 'if (.data | type) == \"array\" then .data |= map(select(.entityId? | tostring | IN(\"944\", \"945\", \"6390\", \"24455\", \"36839\") | not) | if (.entityId | tostring) == \"20131\" and (.entities | type) == \"array\" then .entities |= map(select(.title? != \"酷品\")) else . end) else . end'"
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/main\\/dataList response-jq 'if (.data | type) == \"array\" then .data |= map(select(.entityTemplate? != \"sponsorCard\" and .title? != \"精选配件\")) else . end'"
+    - "^https:\\/\\/api2?\\.coolapk\\.com\\/v6\\/page\\/dataList response-jq 'if (.data | type) == \"array\" then .data |= map(select((.entityTemplate? | IN(\"sponsorCard\", \"imageScaleCard\") | not) and .title? != \"酷安热搜\")) else . end'"
