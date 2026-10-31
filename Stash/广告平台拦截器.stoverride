@@ -10,7 +10,7 @@ rules:
   - "AND,((DOMAIN-KEYWORD,-ad-),(DOMAIN-SUFFIX,byteimg.com)),REJECT"
   - "AND,((DOMAIN-KEYWORD,ads),(DOMAIN-KEYWORD,-normal.zijieapi.com)),REJECT"
   - "DOMAIN,lf-ad-ies.bytecdn.cn,REJECT"
-  - "DOMAIN,dig.bdurl.net,DIRECT"
+  - "DOMAIN,dig.bdurl.net,REJECT-DROP"
   - "DOMAIN,extlog.snssdk.com,REJECT"
   - "DOMAIN,mcs.snssdk.com,REJECT"
   - "DOMAIN-SUFFIX,bds.snssdk.com,REJECT"

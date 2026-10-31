@@ -14,8 +14,7 @@ DOMAIN-KEYWORD,adstrategy,REJECT,extended-matching,pre-matching
 AND,((DOMAIN-KEYWORD,-ad-,extended-matching),(DOMAIN-SUFFIX,byteimg.com,extended-matching)),REJECT,pre-matching
 AND,((DOMAIN-KEYWORD,ads,extended-matching),(DOMAIN-KEYWORD,-normal.zijieapi.com,extended-matching)),REJECT,pre-matching
 DOMAIN,lf-ad-ies.bytecdn.cn,REJECT,extended-matching,pre-matching
-# 字节 HTTPDNS 放行：模块规则排在配置规则前，写成 DIRECT 才能盖过配置里的 bdurl.net 拦截（pre-matching 只支持 REJECT 系，这里不能加）
-DOMAIN,dig.bdurl.net,DIRECT,extended-matching
+DOMAIN,dig.bdurl.net,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,extlog.snssdk.com,REJECT,extended-matching,pre-matching
 DOMAIN,mcs.snssdk.com,REJECT,extended-matching,pre-matching
 DOMAIN-SUFFIX,bds.snssdk.com,REJECT,extended-matching,pre-matching
