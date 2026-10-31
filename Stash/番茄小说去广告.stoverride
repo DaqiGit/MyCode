@@ -5,6 +5,7 @@ icon: "https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px
 category: "zky"
 
 rules:
+  - "DOMAIN,frontier100-toutiao-lf.fqnovel.com,DIRECT"
   - "DOMAIN-WILDCARD,ads*-normal*.zijieapi.com,REJECT-DROP"
   - "DOMAIN,ad.zijieapi.com,REJECT-DROP"
   - "DOMAIN,vas.snssdk.com,REJECT-DROP"

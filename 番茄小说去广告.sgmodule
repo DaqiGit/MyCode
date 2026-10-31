@@ -7,6 +7,9 @@
 #!category=zky-modified
 
 [Rule]
+# 放行：frontier 是字节长连接（推送、实时消息），不是广告，拦了只会让 App 反复重连
+DOMAIN,frontier100-toutiao-lf.fqnovel.com,DIRECT,extended-matching
+
 # 广告
 # 广告接口除 ads3/ads5-normal 外还有 -hl、-lf、-lq、-hj 等分区节点，只拦主节点时 App 会换到这些节点，阅读页底部横幅照样出现
 DOMAIN-WILDCARD,ads*-normal*.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
