@@ -8,6 +8,7 @@ rules:
   - "DOMAIN-WILDCARD,ads*-normal*.zijieapi.com,REJECT-DROP"
   - "DOMAIN,ad.zijieapi.com,REJECT-DROP"
   - "DOMAIN,vas.snssdk.com,REJECT-DROP"
+  - "DOMAIN,isaas3-normal-lf.ecombdapi.com,REJECT-DROP"
   - "DOMAIN-WILDCARD,p*-ad-sign.byteimg.com,REJECT-DROP"
   - "DOMAIN-KEYWORD,pangolin-sdk-toutiao,REJECT-DROP"
   - "DOMAIN,pangolin.snssdk.com,REJECT-DROP"

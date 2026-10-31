@@ -12,6 +12,8 @@
 DOMAIN-WILDCARD,ads*-normal*.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,ad.zijieapi.com,REJECT-DROP,extended-matching,pre-matching
 DOMAIN,vas.snssdk.com,REJECT-DROP,extended-matching,pre-matching
+# 阅读页底部横幅（电商广告，服务端下发）；只拦实际出现的节点，ecombdapi.com / ecombdimg.com 整个后缀会坏抖音电商页
+DOMAIN,isaas3-normal-lf.ecombdapi.com,REJECT-DROP,extended-matching,pre-matching
 # 广告素材图片（横幅里的配图、封面）
 DOMAIN-WILDCARD,p*-ad-sign.byteimg.com,REJECT-DROP,extended-matching,pre-matching
 # 穿山甲 / GroMore 广告 SDK（pangolin-sdk-toutiao.com、-b.com、1~4.com 等）
