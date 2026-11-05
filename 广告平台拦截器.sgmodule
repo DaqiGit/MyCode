@@ -5,11 +5,11 @@
 #!category=BetaModule
 #!tag=去广告, 依赖
 #!homepage=https://hub.kelee.one
-#!date=2026-10-13
+#!date=2026-11-05
 
 [Rule]
 # ===== 字节跳动 / 穿山甲 =====
-AND,((DOMAIN-KEYWORD,tnc,extended-matching),(OR,((DOMAIN-SUFFIX,capcutapi.com,extended-matching),(DOMAIN-SUFFIX,zijieapi.com,extended-matching),(DOMAIN-SUFFIX,isnssdk.com,extended-matching),(DOMAIN-SUFFIX,toutiaoapi.com,extended-matching),(DOMAIN-SUFFIX,bytedance.com,extended-matching),(DOMAIN-SUFFIX,snssdk.com,extended-matching),(DOMAIN-SUFFIX,sgsnssdk.com,extended-matching)))),REJECT-DROP
+# 2026-11-05 删除 tnc 规则：它拦掉字节系 TNC 网络配置（tnc0-aliec2.zijieapi.com 等），导致豆包输入法语音输入连不上。
 DOMAIN-KEYWORD,adstrategy,REJECT,extended-matching,pre-matching
 AND,((DOMAIN-KEYWORD,-ad-,extended-matching),(DOMAIN-SUFFIX,byteimg.com,extended-matching)),REJECT,pre-matching
 AND,((DOMAIN-KEYWORD,ads,extended-matching),(DOMAIN-KEYWORD,-normal.zijieapi.com,extended-matching)),REJECT,pre-matching

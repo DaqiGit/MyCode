@@ -5,7 +5,7 @@ icon: "https://raw.githubusercontent.com/luestr/IconResource/main/Website_icon/1
 category: "zky"
 
 rules:
-  - "AND,((DOMAIN-KEYWORD,tnc),(OR,((DOMAIN-SUFFIX,capcutapi.com),(DOMAIN-SUFFIX,zijieapi.com),(DOMAIN-SUFFIX,isnssdk.com),(DOMAIN-SUFFIX,toutiaoapi.com),(DOMAIN-SUFFIX,bytedance.com),(DOMAIN-SUFFIX,snssdk.com),(DOMAIN-SUFFIX,sgsnssdk.com)))),REJECT-DROP"
+  # 2026-11-05 删除 tnc 规则：会拦掉字节系 TNC 配置，导致豆包输入法语音输入连不上。
   - "DOMAIN-KEYWORD,adstrategy,REJECT"
   - "AND,((DOMAIN-KEYWORD,-ad-),(DOMAIN-SUFFIX,byteimg.com)),REJECT"
   - "AND,((DOMAIN-KEYWORD,ads),(DOMAIN-KEYWORD,-normal.zijieapi.com)),REJECT"
