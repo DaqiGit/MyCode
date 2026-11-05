@@ -1,0 +1,53 @@
+# 自定义直连 DOMAIN-SET：解析到国内 IP，但 skk.moe domestic.conf 没收录的域名。
+# 主配置里的 IP 规则都带 no-resolve，这些域名不补就会落到 FINAL 走海外代理。
+# 引用：DOMAIN-SET,https://raw.githubusercontent.com/DaqiGit/MyCode/main/Direct.list,DIRECT,extended-matching
+# 放在广告拦截规则之后，避免放过广告子域名。
+# 写法：.example.com 匹配主域名和所有子域名；不带点只精确匹配这一个域名。
+
+# 字节系 CDN 与接口
+.bytegecko.com
+.bytecdn.com
+.bytefae.com
+.bytehwm.com
+.bytemaimg.com
+.bytemastatic.com
+.ecombdapi.com
+.ecombdimg.com
+.ecombdpage.com
+# idouyinvod.com 不是 douyinvod.com 的子域名，后缀匹配不到
+.idouyinvod.com
+.300hu.com
+# amemv.com 在 domestic.conf 里有，但 Mac 配置中排在后面，先被 CDN/下载规则截走
+.amemv.com
+.qrstuvwxyzab.com
+
+# 抖音支付（团购下单）
+.doupay.com
+
+# 豆包：hello.doubao-dev.com 原来绕乌克兰节点，说话后回复慢
+.doubao-dev.com
+
+# 番茄小说听书
+.fqnovelvod.com
+
+# 汽水音乐
+.qishui.com
+
+# 千问 / 通义
+.qianwen.com
+.tongyi.com
+
+# 小红书
+.edith.xiaohongshu.com
+
+# 其他国内服务
+.fcbox.com
+.tencentcos.cn
+.zzcdnx.com
+.qiezibenpao.com
+.tianwenca.com
+.ndcpp.com
+.ydycdn.com
+.cjjd14.com
+.bjmxy.net
+.wmzfylgdsz.com
