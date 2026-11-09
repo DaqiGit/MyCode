@@ -1,0 +1,50 @@
+{
+  "name": "Fruits",
+  "description": "Apple emoji 水果图标（透明背景）",
+  "icons": [
+    {
+      "name": "桃子",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/peach.png"
+    },
+    {
+      "name": "草莓",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/strawberry.png"
+    },
+    {
+      "name": "西瓜",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/watermelon.png"
+    },
+    {
+      "name": "橙子",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/orange.png"
+    },
+    {
+      "name": "橡果",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/acorn.png"
+    },
+    {
+      "name": "樱桃",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/cherry.png"
+    },
+    {
+      "name": "菠萝",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/pineapple.png"
+    },
+    {
+      "name": "葡萄",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/grape.png"
+    },
+    {
+      "name": "香蕉",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/banana.png"
+    },
+    {
+      "name": "番茄",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/tomato.png"
+    },
+    {
+      "name": "椰子",
+      "url": "https://raw.githubusercontent.com/DaqiGit/MyCode/main/icons/emoji/coconut.png"
+    }
+  ]
+}
