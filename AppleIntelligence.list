@@ -5,12 +5,15 @@
 #   gateway.icloud.com / gspe1-ssl.ls.apple.com / ls.apple.com：iCloud 通用网关与地图定位，不是 Apple 智能专用，
 #     不单列时由 apple_services 送 Apple 组
 #   mask*.icloud.com / mask*.apple-dns.net：iCloud 专用代理（Private Relay），配置里专门 REJECT，不能放进来
+#     例外 mask-api.icloud.com（私有云计算取令牌要用），在配置里单独放行，因为本规则集排在 REJECT 之后
 #   DOMAIN-KEYWORD,siri：关键字太宽
 
 # ===== Siri 与搜索 =====
 DOMAIN-SUFFIX,smoot.apple.com
 DOMAIN,guzzoni.apple.com
 DOMAIN,api-siri-prod.apple.com
+# 2026-11-10 iPhone 抓包：全局模式下走代理；规则模式下会被 apple_cdn 送去直连
+DOMAIN-SUFFIX,seed.siri.apple.com
 
 # ===== 私有云计算（Private Cloud Compute）中继 =====
 DOMAIN-SUFFIX,apple-relay.apple.com
