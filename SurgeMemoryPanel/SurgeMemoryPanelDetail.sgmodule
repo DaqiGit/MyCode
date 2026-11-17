@@ -1,0 +1,24 @@
+#!name=Surge 内存详情
+#!desc=在策略选择视图显示 Surge 运行监控：标题直接显示当前内存与占比，进度条（━ 当前、┅ 到峰值、─ 未用）、峰值/最低与较上次变化、活动连接/DNS 缓存/虚拟 IP、运行时长；上限、格数、刷新间隔可在参数表里改；iOS 需有效订阅
+#!author=小慧
+#!homepage=https://github.com/Yi-r8/Surge/blob/main/sgmodule/SurgeMemoryPanelDetail.sgmodule
+#!category=工具
+#!system=ios
+#!version=2026-11-17-v7
+#!arguments=LIMIT_MB:50,BAR_WIDTH:16,REFRESH:60
+#!arguments-desc=LIMIT_MB 内存上限（MB，iOS Network Extension 约 50）；BAR_WIDTH 进度条格数（6–30）；REFRESH 自动刷新间隔（秒）
+
+# ============ 说明 ============
+# 信息面板显示在 iOS 的策略选择视图里，内容由 generic 脚本用 $httpAPI
+# （无需鉴权）读取运行数据生成。
+# update-interval：切到策略选择视图且距上次更新超过该秒数时自动刷新；
+# 点面板刷新按钮立即刷新。
+# 峰值/最低只统计本面板的采样，引擎重启后重新记录。
+# 注意：iOS 上信息面板需要有效订阅（2021-09-22 之后到期），订阅过期时
+# 面板不显示，不影响其他功能。
+
+[Panel]
+Surge 内存详情 = title="Surge 运行监控",content="加载中…",script-name=surge-memory-panel-detail,update-interval={{{REFRESH}}}
+
+[Script]
+surge-memory-panel-detail = type=generic,timeout=10,script-path=https://raw.githubusercontent.com/DaqiGit/MyCode/main/SurgeMemoryPanel/surge-memory-panel-detail.js,argument="limit={{{LIMIT_MB}}}&width={{{BAR_WIDTH}}}"
