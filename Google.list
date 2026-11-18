@@ -67,6 +67,10 @@ DOMAIN-SUFFIX,googleblog.com
 
 # ===== AI：Gemini、DeepMind、NotebookLM（gemini.google / notebooklm.google 已由 .google 覆盖） =====
 DOMAIN-SUFFIX,deepmind.com
+# 2026-11-18 Mac 抓包（Antigravity / agy）：Gemini API 文档 MCP 落到 FINAL
+DOMAIN-SUFFIX,gemini-api-docs-mcp.dev
+# Antigravity 自动更新托管在 Cloud Run；run.app 大量是第三方站点，只收 antigravity- 开头的
+DOMAIN-WILDCARD,antigravity-*.run.app
 
 # ===== Android、Chrome、开发者 =====
 DOMAIN-SUFFIX,android.com
