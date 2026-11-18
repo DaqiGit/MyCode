@@ -1,0 +1,90 @@
+# Google 及旗下服务分流（送 Google 组，选乌克兰节点）
+# 配置里排在广告拦截之后、CDN / 流媒体 / AI 之前：
+#   广告拦截先生效，doubleclick 等广告子域名照样被拦；
+#   YouTube（原 Streaming）、Gemini（原 AI）、dl.google.com（原 Download）都改走 Google 组。
+# 有意不收：
+#   *.cn 镜像（googleapis.cn、gstatic.cn 等）：国内可直连，交给后面的 domestic 规则
+#   DOMAIN-KEYWORD,google：会连带命中 .cn 镜像和无关域名
+#   web.app / firebaseapp.com 等 Firebase 第三方托管、GCP（AS396982）：大量是别家网站，不是 Google 自己的服务
+# IP 规则（AS15169 等）不放这里，在配置的 IP 段单独写，保持 no-resolve。
+
+# ===== 搜索与账号 =====
+DOMAIN-SUFFIX,google.com
+DOMAIN-SUFFIX,google.com.hk
+DOMAIN-SUFFIX,google.com.tw
+DOMAIN-SUFFIX,google.com.sg
+DOMAIN-SUFFIX,google.com.ua
+DOMAIN-SUFFIX,google.co.jp
+DOMAIN-SUFFIX,google.co.kr
+DOMAIN-SUFFIX,google.co.uk
+DOMAIN-SUFFIX,google.de
+DOMAIN-SUFFIX,google.ua
+# .google 顶级域：blog.google、gemini.google、store.google、deepmind.google 等
+DOMAIN-SUFFIX,google
+DOMAIN-SUFFIX,g.co
+DOMAIN-SUFFIX,goo.gl
+DOMAIN-SUFFIX,1e100.net
+
+# ===== 基础设施、API 与静态资源 =====
+DOMAIN-SUFFIX,googleapis.com
+DOMAIN-SUFFIX,gstatic.com
+DOMAIN-SUFFIX,googleusercontent.com
+DOMAIN-SUFFIX,ggpht.com
+DOMAIN-SUFFIX,gvt1.com
+DOMAIN-SUFFIX,gvt2.com
+DOMAIN-SUFFIX,gvt3.com
+DOMAIN-SUFFIX,googlehosted.com
+DOMAIN-SUFFIX,gmodules.com
+DOMAIN-SUFFIX,recaptcha.net
+DOMAIN-SUFFIX,ampproject.org
+DOMAIN-SUFFIX,ampproject.net
+
+# ===== 统计与广告（未被前面拦截规则拦下的部分） =====
+DOMAIN-SUFFIX,google-analytics.com
+DOMAIN-SUFFIX,googletagmanager.com
+DOMAIN-SUFFIX,googleadservices.com
+DOMAIN-SUFFIX,googlesyndication.com
+DOMAIN-SUFFIX,doubleclick.net
+DOMAIN-SUFFIX,app-measurement.com
+DOMAIN-SUFFIX,crashlytics.com
+
+# ===== YouTube =====
+DOMAIN-SUFFIX,youtube.com
+DOMAIN-SUFFIX,youtu.be
+DOMAIN-SUFFIX,ytimg.com
+DOMAIN-SUFFIX,googlevideo.com
+DOMAIN-SUFFIX,youtube-nocookie.com
+DOMAIN-SUFFIX,youtubekids.com
+DOMAIN-SUFFIX,withyoutube.com
+
+# ===== Gmail、云端硬盘、Blogger =====
+DOMAIN-SUFFIX,gmail.com
+DOMAIN-SUFFIX,googlemail.com
+DOMAIN-SUFFIX,googledrive.com
+DOMAIN-SUFFIX,blogger.com
+DOMAIN-SUFFIX,blogspot.com
+DOMAIN-SUFFIX,googleblog.com
+
+# ===== AI：Gemini、DeepMind、NotebookLM（gemini.google / notebooklm.google 已由 .google 覆盖） =====
+DOMAIN-SUFFIX,deepmind.com
+
+# ===== Android、Chrome、开发者 =====
+DOMAIN-SUFFIX,android.com
+DOMAIN-SUFFIX,chrome.com
+DOMAIN-SUFFIX,chromium.org
+DOMAIN-SUFFIX,googlesource.com
+DOMAIN-SUFFIX,googlecode.com
+DOMAIN-SUFFIX,withgoogle.com
+DOMAIN-SUFFIX,appspot.com
+DOMAIN-SUFFIX,firebaseio.com
+DOMAIN-SUFFIX,go.dev
+DOMAIN-SUFFIX,golang.org
+DOMAIN-SUFFIX,gcr.io
+DOMAIN-SUFFIX,pkg.dev
+DOMAIN-SUFFIX,kaggle.com
+
+# ===== 其他旗下产品 =====
+DOMAIN-SUFFIX,waze.com
+DOMAIN-SUFFIX,nest.com
+DOMAIN-SUFFIX,fitbit.com
+DOMAIN-SUFFIX,tenor.com
